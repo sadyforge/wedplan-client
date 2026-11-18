@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   return (
     <SidebarProvider>
       <DashBoardSidebar />
-      <main>
+      <main className="min-w-0 flex-1">
         <SidebarTrigger />
         {children}
       </main>
