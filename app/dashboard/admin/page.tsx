@@ -1,11 +1,11 @@
-import React from 'react';
+import { requireDashboardRole } from "@/lib/dashboard-auth"
 
-const AdminPage = () => {
-    return (
-        <div>
-            AdminPage
-        </div>
-    );
-};
+export const instant = false
 
-export default AdminPage;
+const AdminPage = async () => {
+  await requireDashboardRole(["admin"])
+
+  return <div>AdminPage</div>
+}
+
+export default AdminPage

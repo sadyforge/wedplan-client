@@ -1,11 +1,11 @@
-import React from 'react';
+import { requireDashboardRole } from "@/lib/dashboard-auth"
 
-const CustomerPage = () => {
-    return (
-        <div>
-            CustomerPage
-        </div>
-    );
-};
+export const instant = false
 
-export default CustomerPage;
+const CustomerPage = async () => {
+  await requireDashboardRole(["customer"])
+
+  return <div>CustomerPage</div>
+}
+
+export default CustomerPage

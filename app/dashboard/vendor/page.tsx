@@ -1,11 +1,11 @@
-import React from 'react';
+import { requireDashboardRole } from "@/lib/dashboard-auth"
 
-const VendorPage = () => {
-    return (
-        <div>
-            VendorPage
-        </div>
-    );
-};
+export const instant = false
 
-export default VendorPage;
+const VendorPage = async () => {
+  await requireDashboardRole(["vendor"])
+
+  return <div>VendorPage</div>
+}
+
+export default VendorPage

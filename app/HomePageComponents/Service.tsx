@@ -22,7 +22,7 @@ const services = [
     category: "Beautiful Wedding Spaces",
     price: "Starting from ৳10,000",
     image:
-      "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?q=80&w=900&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=900&auto=format&fit=crop",
   },
   {
     title: "Catering Services",

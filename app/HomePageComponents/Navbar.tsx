@@ -37,16 +37,28 @@ const Navbar = () => {
     .trim();
 
   const roleDetails = {
-    admin: { label: "Admin", dashboardLabel: "Admin Hub" },
-    vendor: { label: "Vendor", dashboardLabel: "Vendor Hub" },
-    customer: { label: "Customer", dashboardLabel: "Customer Hub" },
+    admin: {
+      label: "Admin",
+      dashboardLabel: "Admin Hub",
+      dashboardHref: "/dashboard/admin",
+    },
+    vendor: {
+      label: "Vendor",
+      dashboardLabel: "Vendor Hub",
+      dashboardHref: "/dashboard/vendor",
+    },
+    customer: {
+      label: "Customer",
+      dashboardLabel: "Customer Hub",
+      dashboardHref: "/dashboard/customer",
+    },
   } as const;
 
   const currentRole =
     roleDetails[role as keyof typeof roleDetails] || roleDetails.customer;
   const roleLabel = currentRole.label;
   const dashboardLabel = currentRole.dashboardLabel;
-  const dashboardHref = "/dashboard";
+  const dashboardHref = currentRole.dashboardHref;
 
   const handleSignOut = async () => {
     const { error } = await authClient.signOut();
