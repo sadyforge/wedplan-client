@@ -4,20 +4,20 @@ import Image from "next/image";
 import {
   Plus,
   MapPin,
-  ArrowUpRight,
   BriefcaseBusiness,
   Camera,
   CheckCircle2,
   Clock,
   XCircle,
   Pencil,
-  Trash2,
   Eye,
   Sparkles,
   Crown,
 } from "lucide-react";
 import { requireDashboardRole } from "@/lib/dashboard-auth";
 import { GetServices } from "@/lib/actions/services";
+import EditServiceDialog from "@/app/components/dashboard/EditServiceDialog";
+import DeleteServiceDialog from "@/app/components/dashboard/DeleteServiceDialog";
 
 export const instant = false;
 
@@ -28,12 +28,15 @@ export default async function ServicesPage() {
   const serviceList = Array.isArray(services) ? services : [];
 
   const totalServices = serviceList.length;
+
   const activeServices = serviceList.filter(
     (service) => service.isActive === true && service.status === "approved"
   ).length;
+
   const pendingServices = serviceList.filter(
     (service) => service.status === "pending"
   ).length;
+
   const rejectedServices = serviceList.filter(
     (service) => service.status === "rejected"
   ).length;
@@ -91,52 +94,76 @@ export default async function ServicesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#8B8179]">Total Services</p>
-                <h2 className="mt-2 text-3xl font-semibold">{totalServices}</h2>
+                <h2 className="mt-2 text-3xl font-semibold">
+                  {totalServices}
+                </h2>
               </div>
+
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F9E9EC] text-[#C98291]">
                 <BriefcaseBusiness size={22} />
               </div>
             </div>
-            <p className="mt-4 text-xs text-[#A49A92]">All submitted services</p>
+
+            <p className="mt-4 text-xs text-[#A49A92]">
+              All submitted services
+            </p>
           </div>
 
           <div className="rounded-2xl border border-[#EDE3DA] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#8B8179]">Active Services</p>
-                <h2 className="mt-2 text-3xl font-semibold">{activeServices}</h2>
+                <h2 className="mt-2 text-3xl font-semibold">
+                  {activeServices}
+                </h2>
               </div>
+
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600">
                 <CheckCircle2 size={22} />
               </div>
             </div>
-            <p className="mt-4 text-xs text-[#A49A92]">Approved and available</p>
+
+            <p className="mt-4 text-xs text-[#A49A92]">
+              Approved and available
+            </p>
           </div>
 
           <div className="rounded-2xl border border-[#EDE3DA] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#8B8179]">Pending Review</p>
-                <h2 className="mt-2 text-3xl font-semibold">{pendingServices}</h2>
+                <h2 className="mt-2 text-3xl font-semibold">
+                  {pendingServices}
+                </h2>
               </div>
+
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                 <Clock size={22} />
               </div>
             </div>
-            <p className="mt-4 text-xs text-[#A49A92]">Waiting for admin approval</p>
+
+            <p className="mt-4 text-xs text-[#A49A92]">
+              Waiting for admin approval
+            </p>
           </div>
 
           <div className="rounded-2xl border border-[#EDE3DA] bg-white p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#8B8179]">Rejected Services</p>
-                <h2 className="mt-2 text-3xl font-semibold">{rejectedServices}</h2>
+                <h2 className="mt-2 text-3xl font-semibold">
+                  {rejectedServices}
+                </h2>
               </div>
+
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-500">
                 <XCircle size={22} />
               </div>
             </div>
-            <p className="mt-4 text-xs text-[#A49A92]">Services not approved</p>
+
+            <p className="mt-4 text-xs text-[#A49A92]">
+              Services not approved
+            </p>
           </div>
         </div>
 
@@ -147,8 +174,12 @@ export default async function ServicesPage() {
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[#B18B55]">
                 <Crown size={21} />
               </div>
+
               <div>
-                <h3 className="font-semibold">Grow Your Wedding Business</h3>
+                <h3 className="font-semibold">
+                  Grow Your Wedding Business
+                </h3>
+
                 <p className="mt-1 text-sm leading-6 text-[#8B8179]">
                   Free plan allows up to 3 active services. Upgrade to Premium
                   to publish unlimited services.
@@ -161,7 +192,7 @@ export default async function ServicesPage() {
               className="inline-flex shrink-0 items-center justify-center rounded-xl bg-[#302925] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#51443D]"
             >
               Explore Premium
-              <ArrowUpRight size={16} className="ml-2" />
+              <span className="ml-2">↗</span>
             </Link>
           </div>
         )}
@@ -171,6 +202,7 @@ export default async function ServicesPage() {
           <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-xl font-semibold">All Services</h2>
+
               <p className="mt-1 text-sm text-[#8B8179]">
                 {isAdmin
                   ? "Review submitted services and their approval status."
@@ -211,9 +243,9 @@ export default async function ServicesPage() {
                     </span>
 
                     <span
-                      className={`absolute right-4 top-4 rounded-full border px-3 py-1.5 text-xs font-semibold capitalize ${
-                        getStatusStyle(service.status)
-                      }`}
+                      className={`absolute right-4 top-4 rounded-full border px-3 py-1.5 text-xs font-semibold capitalize ${getStatusStyle(
+                        service.status
+                      )}`}
                     >
                       {service.status || "Pending"}
                     </span>
@@ -233,12 +265,17 @@ export default async function ServicesPage() {
 
                     <div className="flex items-center gap-2 text-sm text-[#8B8179]">
                       <MapPin size={16} className="shrink-0 text-[#C98291]" />
-                      <span className="line-clamp-1">{service.location}</span>
+                      <span className="line-clamp-1">
+                        {service.location}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-[#F0EAE4] pt-4">
                       <div>
-                        <p className="text-xs text-[#A49A92]">Starting Price</p>
+                        <p className="text-xs text-[#A49A92]">
+                          Starting Price
+                        </p>
+
                         <p className="mt-1 text-xl font-semibold text-[#C98291]">
                           ৳{Number(service.price).toLocaleString("en-BD")}
                         </p>
@@ -267,23 +304,21 @@ export default async function ServicesPage() {
 
                       {!isAdmin && (
                         <>
-                          <Link
-                            href={`/dashboard/services/edit/${service._id || service.id}`}
-                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EDE3DA] text-[#8B8179] transition hover:border-[#C98291] hover:text-[#C98291]"
-                            aria-label="Edit service"
-                          >
-                            <Pencil size={16} />
-                          </Link>
+                          <EditServiceDialog service={service}>
+                            <button
+                              type="button"
+                              title="Edit service"
+                              aria-label="Edit service"
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EDE3DA] text-[#8B8179] transition hover:border-[#C98291] hover:text-[#C98291]"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                          </EditServiceDialog>
 
-                          <button
-                            type="button"
-                            disabled
-                            title="Delete action is not connected yet"
-                            className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-xl border border-[#EDE3DA] text-[#BCAFA5] opacity-60"
-                            aria-label="Delete service"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <DeleteServiceDialog
+                            serviceId={service._id || service.id}
+                            serviceName={service.serviceName}
+                          />
                         </>
                       )}
                     </div>

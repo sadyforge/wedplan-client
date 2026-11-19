@@ -3,6 +3,7 @@ import { Service } from "./types";
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
+  //post 
 export const AddServices = async (data: Service) => {
   try {
     const res = await fetch(`${baseUrl}/services`, {
@@ -46,5 +47,66 @@ export const GetServices = async () => {
   } catch (error) {
     console.error("GetServices error:", error);
     return [];
+  }
+};
+
+// get single services
+export const GetSingleService = async (id: string) => {
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch service");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("GetSingleService error:", error);
+    return {
+      success: false,
+      message: "Failed to fetch service",
+    };
+  }
+};
+
+
+// edit
+export const UpdateServices = async (id: string, data: Partial<Service>) => {
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    return await res.json();
+  } catch (error) {
+    console.error("UpdateServices error:", error);
+
+    return {
+      success: false,
+      message: "Failed to update service.",
+    };
+  }
+};
+
+
+//delete
+export const DeleteServices = async (id: string) => {
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}`, {
+      method: "DELETE",
+    });
+
+    return await res.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: "Failed to delete service.",
+    };
   }
 };

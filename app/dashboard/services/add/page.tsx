@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { AddServices } from "@/lib/actions/services";
+import { useRouter } from "next/navigation";
 
 const categories = [
   "Photography & Videography",
@@ -25,6 +26,7 @@ const categories = [
 ];
 
 const AddServiceForm = () => {
+  const router=useRouter()
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
 
@@ -122,7 +124,7 @@ const AddServiceForm = () => {
     const result = await AddServices(serviceData);
 
     if (result?.success) {
-      toast.success("Service submitted successfully!");
+      toast.success("Service added successfully!");
 
       setFormData({
         serviceName: "",
@@ -134,6 +136,8 @@ const AddServiceForm = () => {
 
       setImage(null);
       setPreview("");
+      router.push("/dashboard/services")
+      
     } else {
       toast.error(result?.message || "Failed to submit service.");
     }
