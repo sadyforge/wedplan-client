@@ -47,7 +47,7 @@ const services = [
   },
 ];
 
-const ServiceCards = () => {
+const HomeServiceCards = () => {
   return (
     <section className="bg-[#F8F4EF] px-5 py-20 lg:py-24">
       <div className="mx-auto max-w-7xl">
@@ -102,7 +102,7 @@ const ServiceCards = () => {
                   </p>
 
                   <Link
-                    href="/services"
+                    href="/browse-services"
                     className="shrink-0 text-sm font-semibold text-[#C98291] transition hover:text-[#302925]"
                   >
                     Explore →
@@ -115,7 +115,7 @@ const ServiceCards = () => {
 
         <div className="mt-12 text-center">
           <Link
-            href="/services"
+            href="/browse-services"
             className="inline-block rounded-full border border-[#C98291] px-8 py-3 text-sm font-semibold text-[#B66F7F] transition hover:bg-[#C98291] hover:text-white"
           >
             View All Services →
@@ -126,4 +126,4 @@ const ServiceCards = () => {
   );
 };
 
-export default ServiceCards;
+export default HomeServiceCards;

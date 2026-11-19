@@ -1,16 +1,13 @@
-import Image from "next/image";
-import Navbar from "./HomePageComponents/Navbar";
-import ServiceCards from "./HomePageComponents/Service";
-import Footer from "./HomePageComponents/Footer";
 import Banner from "./HomePageComponents/Banner";
+import BrowseServiceCard from "./HomePageComponents/browseServiceCard";
+import HomeServiceCards from "./HomePageComponents/services";
 
 export default function Home() {
   return (
   <div>
-    <Navbar/>
     <Banner/>
-    <ServiceCards/>
-    <Footer/>
+    <BrowseServiceCard/>
+    <HomeServiceCards/>
   </div>
   );
 }

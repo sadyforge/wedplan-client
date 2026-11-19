@@ -27,7 +27,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Browse Services", href: "/services" },
+    { name: "Browse Services", href: "/browse-services" },
   ];
 
   const role = String(

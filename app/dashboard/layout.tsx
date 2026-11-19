@@ -8,13 +8,12 @@ export default async function Layout({ children }: { children: React.ReactNode }
   await requireDashboardRole()
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-dvh min-h-0 overflow-hidden">
       <DashBoardSidebar />
-      <main className="min-w-0 flex-1">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         <SidebarTrigger />
         {children}
       </main>
-   
     </SidebarProvider>
   )
 }
