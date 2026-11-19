@@ -1,9 +1,10 @@
+
 import { Service } from "./types";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
-  //post 
+// post
 export const AddServices = async (data: Service) => {
   try {
     const res = await fetch(`${baseUrl}/services`, {
@@ -57,20 +58,23 @@ export const GetSingleService = async (id: string) => {
       cache: "no-store",
     });
 
+    const result = await res.json();
+
     if (!res.ok) {
-      throw new Error("Failed to fetch service");
+      throw new Error(result.message || "Failed to fetch service");
     }
 
-    return await res.json();
+    return result;
   } catch (error) {
     console.error("GetSingleService error:", error);
+
     return {
       success: false,
-      message: "Failed to fetch service",
+      message:
+        error instanceof Error ? error.message : "Failed to fetch service",
     };
   }
 };
-
 
 // edit
 export const UpdateServices = async (id: string, data: Partial<Service>) => {
@@ -83,30 +87,95 @@ export const UpdateServices = async (id: string, data: Partial<Service>) => {
       body: JSON.stringify(data),
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to update service.");
+    }
+
+    return result;
   } catch (error) {
     console.error("UpdateServices error:", error);
 
     return {
       success: false,
-      message: "Failed to update service.",
+      message:
+        error instanceof Error ? error.message : "Failed to update service.",
     };
   }
 };
 
-
-//delete
+// delete
 export const DeleteServices = async (id: string) => {
   try {
     const res = await fetch(`${baseUrl}/services/${id}`, {
       method: "DELETE",
     });
 
-    return await res.json();
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to delete service.");
+    }
+
+    return result;
   } catch (error) {
+    console.error("DeleteServices error:", error);
+
     return {
       success: false,
-      message: "Failed to delete service.",
+      message:
+        error instanceof Error ? error.message : "Failed to delete service.",
+    };
+  }
+};
+
+// approve
+export const ApproveService = async (id: string) => {
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}/approve`, {
+      method: "PATCH",
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to approve service");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("ApproveService error:", error);
+
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to approve service",
+    };
+  }
+};
+
+// reject
+export const RejectService = async (id: string) => {
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}/reject`, {
+      method: "PATCH",
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to reject service");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("RejectService error:", error);
+
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to reject service",
     };
   }
 };

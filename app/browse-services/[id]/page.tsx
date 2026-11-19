@@ -1,238 +1,245 @@
 
-"use client";
-
-import { useEffect, useState } from "react";
+import { GetSingleService } from "@/lib/actions/services";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  MapPin,
-  Star,
-  ShieldCheck,
-  CalendarDays,
   ArrowLeft,
+  MapPin,
+  Tag,
+  ShieldCheck,
+  ArrowUpRight,
+  Phone,
   CheckCircle2,
-  MessageCircle,
+  Loader2,
 } from "lucide-react";
-import { GetSingleBrowseService } from "@/lib/actions/browse";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-const BrowseCardDetailPage = ({
-  params,
-}: {
+interface Service {
+  _id: string;
+  serviceName: string;
+  category?: string;
+  description?: string;
+  price?: string | number;
+  image?: string;
+  location?: string;
+  vendorName?: string;
+  vendorEmail?: string;
+  vendorPhone?: string;
+}
+
+interface Props {
   params: Promise<{ id: string }>;
-}) => {
-  const [id, setId] = useState("");
-  const [service, setService] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+}
 
-  useEffect(() => {
-    params.then(({ id }) => setId(id));
-  }, [params]);
+const BrowseServicesCardDetailContent = async ({ params }: Props) => {
+  const { id } = await params;
 
-  useEffect(() => {
-    if (!id) return;
+  const data = await GetSingleService(id);
 
-    const fetchService = async () => {
-      try {
-        const data = await GetSingleBrowseService(id);
-        setService(data);
-      } catch (error) {
-        console.error("Failed to fetch service:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchService();
-  }, [id]);
-
-  // নিচে তোমার আগের return এবং সম্পূর্ণ design রাখবে।
-
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#F8F4EF]">
-        <p className="text-[#C98291]">Loading service details...</p>
-      </div>
-    );
+  if (!data || data.success === false || !data.data?._id) {
+    notFound();
   }
 
-  if (!service) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center bg-[#F8F4EF] px-5">
-        <h2 className="text-2xl font-semibold text-[#302925]">
-          Service Not Found
-        </h2>
-        <Link
-          href="/browse-service"
-          className="mt-5 rounded-full bg-[#C98291] px-6 py-3 text-white"
-        >
-          Back to Services
-        </Link>
-      </div>
-    );
-  }
+  const service: Service = data.data;
 
   return (
-    <main className="min-h-screen bg-[#F8F4EF] px-5 py-12">
+    <section className="min-h-screen bg-[#F8F4EF] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <Link
           href="/browse-services"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-[#786C65] transition hover:text-[#C98291]"
+          className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-[#94774f] transition hover:text-[#292820]"
         >
-          <ArrowLeft size={17} />
-          Back to Browse Services
+          <ArrowLeft size={18} />
+          Back
         </Link>
 
-        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr]">
-          <div>
-            <div className="relative h-[300px] overflow-hidden rounded-3xl sm:h-[450px]">
-              {service.image && (
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <div className="relative h-[300px] overflow-hidden rounded-3xl bg-[#e8e1d7] sm:h-[450px]">
+              {service.image ? (
                 <Image
                   src={service.image}
-                  alt={service.title}
+                  alt={service.serviceName}
                   fill
                   priority
-                  sizes="(max-width: 1024px) 100vw, 65vw"
+                  unoptimized
                   className="object-cover"
                 />
+              ) : (
+                <div className="flex h-full items-center justify-center text-gray-400">
+                  No Image Available
+                </div>
+              )}
+
+              {service.category && (
+                <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#94774f] shadow">
+                  {service.category}
+                </span>
               )}
             </div>
 
-            <div className="mt-8">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-[#F1DDE0] px-4 py-2 text-xs font-semibold text-[#B66F7F]">
-                  {service.category}
-                </span>
+            <div className="rounded-3xl border border-[#e8e1d7] bg-white p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[#94774f]">
+                    Wedding Service
+                  </p>
 
-                {service.status === "approved" && (
-                  <span className="flex items-center gap-1 rounded-full bg-green-100 px-4 py-2 text-xs font-semibold text-green-700">
-                    <ShieldCheck size={14} />
-                    Verified Service
+                  <h1 className="mt-2 text-2xl font-bold text-[#292820] sm:text-3xl">
+                    {service.serviceName}
+                  </h1>
+                </div>
+
+                <div className="rounded-xl bg-green-50 px-3 py-2 text-xs font-semibold text-green-700">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 size={15} />
+                    Available Service
                   </span>
-                )}
+                </div>
               </div>
 
-              <h1 className="mt-5 font-serif text-3xl font-semibold text-[#302925] sm:text-4xl">
-                {service.title}
-              </h1>
+              <div className="mt-6 grid gap-4 border-y border-gray-100 py-5 sm:grid-cols-2">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-[#f5efe7] p-3 text-[#94774f]">
+                    <MapPin size={20} />
+                  </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-5 text-sm text-[#786C65]">
-                <span className="flex items-center gap-2">
-                  <MapPin size={17} className="text-[#C98291]" />
-                  {service.location}
-                </span>
+                  <div>
+                    <p className="text-xs text-gray-400">Location</p>
+                    <p className="mt-1 text-sm font-semibold text-[#292820]">
+                      {service.location || "Location not specified"}
+                    </p>
+                  </div>
+                </div>
 
-                {service.rating && (
-                  <span className="flex items-center gap-2">
-                    <Star size={17} className="fill-[#E5AD52] text-[#E5AD52]" />
-                    {service.rating}
-                    {service.totalReviews
-                      ? ` (${service.totalReviews} reviews)`
-                      : ""}
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-[#f5efe7] p-3 text-[#94774f]">
+                    <Tag size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-400">Category</p>
+                    <p className="mt-1 text-sm font-semibold text-[#292820]">
+                      {service.category || "General"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-9 border-t border-[#E9DED5] pt-8">
-                <h2 className="font-serif text-2xl font-semibold text-[#302925]">
+              <div className="mt-6">
+                <h2 className="text-xl font-bold text-[#292820]">
                   About This Service
                 </h2>
 
-                <p className="mt-4 whitespace-pre-line text-sm leading-8 text-[#786C65]">
+                <p className="mt-4 whitespace-pre-line text-sm leading-8 text-gray-600">
                   {service.description || "No description available."}
                 </p>
               </div>
 
-              <div className="mt-9 border-t border-[#E9DED5] pt-8">
-                <h2 className="font-serif text-2xl font-semibold text-[#302925]">
-                  Why Choose This Service?
-                </h2>
+              <div className="mt-8 rounded-2xl bg-[#faf8f5] p-5">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="text-[#94774f]" size={22} />
 
-                <div className="mt-5 space-y-4">
-                  <div className="flex items-center gap-3 text-sm text-[#665B55]">
-                    <CheckCircle2 size={19} className="text-[#C98291]" />
-                    Professional wedding service
-                  </div>
+                  <div>
+                    <h3 className="font-semibold text-[#292820]">
+                      Trusted Wedding Service
+                    </h3>
 
-                  <div className="flex items-center gap-3 text-sm text-[#665B55]">
-                    <CheckCircle2 size={19} className="text-[#C98291]" />
-                    Easy booking process
-                  </div>
-
-                  <div className="flex items-center gap-3 text-sm text-[#665B55]">
-                    <CheckCircle2 size={19} className="text-[#C98291]" />
-                    Dedicated vendor support
+                    <p className="mt-1 text-xs text-gray-500">
+                      This service is available through WedPlan.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <aside>
-            <div className="sticky top-24 rounded-3xl border border-[#EEE3DC] bg-white p-7 shadow-sm">
-              <p className="text-sm font-medium text-[#786C65]">
-                Starting Price
-              </p>
+          <aside className="h-fit rounded-3xl border border-[#e8e1d7] bg-white p-6 shadow-sm lg:sticky lg:top-24">
+            <p className="text-sm font-medium text-gray-500">
+              Service Pricing
+            </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-[#C98291]">
-                ৳{Number(service.price || 0).toLocaleString("en-BD")}
-              </h2>
+            <h2 className="mt-2 text-3xl font-bold text-[#94774f]">
+              {service.price ? `৳${service.price}` : "Contact for price"}
+            </h2>
 
-              {service.priceType && (
-                <p className="mt-1 text-sm text-[#786C65]">
-                  {service.priceType}
-                </p>
-              )}
+            <p className="mt-2 text-xs text-gray-400">
+              Final pricing may depend on your requirements.
+            </p>
 
-              <div className="my-7 border-t border-[#F0E8E2]" />
+            <div className="my-6 border-t border-gray-100" />
 
-              <h3 className="text-lg font-semibold text-[#302925]">
-                Vendor Information
-              </h3>
+            <h3 className="font-bold text-[#292820]">
+              Service Provider
+            </h3>
 
-              <div className="mt-5 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F1DDE0] font-serif text-xl text-[#B66F7F]">
-                  {service.vendorName?.charAt(0) || "V"}
+            <div className="mt-4 rounded-2xl bg-[#faf8f5] p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e8cda1] text-[#292820]">
+                  <ShieldCheck size={22} />
                 </div>
 
                 <div>
-                  <p className="font-semibold text-[#302925]">
-                    {service.vendorName || "Wedding Vendor"}
+                  <p className="font-semibold text-[#292820]">
+                    {service.vendorName || "WedPlan Service Provider"}
                   </p>
-                  <p className="text-xs text-[#786C65]">
-                    Professional Vendor
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Service Provider
                   </p>
                 </div>
               </div>
 
-              <div className="mt-7 space-y-3">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#C98291] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#B66F7F]"
-                >
-                  <CalendarDays size={18} />
-                  Book This Service
-                </button>
+              {service.vendorEmail && (
+                <p className="mt-4 break-all text-xs text-gray-500">
+                  {service.vendorEmail}
+                </p>
+              )}
 
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-[#C98291] px-6 py-4 text-sm font-semibold text-[#B66F7F] transition hover:bg-[#FDF1F3]"
-                >
-                  <MessageCircle size={18} />
-                  Contact Vendor
-                </button>
-              </div>
-
-              <p className="mt-5 text-center text-xs leading-6 text-[#94867E]">
-                Final pricing and availability may vary depending on your
-                wedding requirements.
-              </p>
+              {service.vendorPhone && (
+                <p className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                  <Phone size={14} />
+                  {service.vendorPhone}
+                </p>
+              )}
             </div>
+
+            <Link
+              href={`/dashboard/customer/book-service/${service._id}`}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#292820] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#94774f]"
+            >
+              Book This Service
+              <ArrowUpRight size={18} />
+            </Link>
+
+            <p className="mt-4 text-center text-xs leading-5 text-gray-400">
+              Make your special day memorable with the right service.
+            </p>
           </aside>
         </div>
       </div>
-    </main>
+    </section>
   );
 };
 
-export default BrowseCardDetailPage;
+const BrowseServicesCardDetail = ({ params }: Props) => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-[#94774f]" />
+            <p className="text-sm font-medium text-[#94774f]">
+              Loading service...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <BrowseServicesCardDetailContent params={params} />
+    </Suspense>
+  );
+};
+
+export default BrowseServicesCardDetail;

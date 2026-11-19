@@ -55,8 +55,8 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
   ],
   admin: [
     { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
-    { name: "Manage Users", url: "/dashboard/users", icon: Users },
-    { name: "Manage Services", url: "/dashboard/services", icon: ShieldCheck },
+    { name: "Manage Users", url: "/dashboard/admin/manage-users", icon: Users },
+    { name: "Manage Services", url: "/dashboard/admin/services", icon: ShieldCheck },
     { name: "Transactions", url: "/dashboard/transactions", icon: CreditCard },
     { name: "Profile Settings", url: "/profile", icon: Settings },
   ],
