@@ -174,6 +174,22 @@ const SignUp = () => {
     }
   };
 
+const handleGoogleSignin = async () => {
+  try {
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+
+    if (error) {
+      toast.error(error.message || "Google sign in failed");
+    }
+  } catch (error) {
+    console.error("Google sign in error:", error);
+    toast.error("Something went wrong. Please try again.");
+  }
+};
+
   return (
     <section className="flex min-h-screen items-center justify-center bg-[#F8F4EF] px-4 py-12">
       <div className="grid w-full max-w-6xl overflow-hidden rounded-3xl border border-[#EDE3DC] bg-white shadow-xl lg:grid-cols-2">
@@ -428,6 +444,47 @@ const SignUp = () => {
               )}
             </button>
           </form>
+
+{/* Google */}
+<div className="relative my-6">
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-[#EDE3DC]" />
+  </div>
+
+  <div className="relative flex justify-center text-sm">
+    <span className="bg-white px-4 text-[#897A72]">
+      Or continue with
+    </span>
+  </div>
+</div>
+
+<button
+  type="button"
+  onClick={handleGoogleSignin}
+  className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EDE3DC] bg-white py-3 text-sm font-semibold text-[#302925] transition hover:bg-[#F8F4EF]"
+>
+  <svg className="h-5 w-5" viewBox="0 0 48 48">
+    <path
+      fill="#EA4335"
+      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 3.09 13.22l7.98 6.19C13 13.72 18.09 9.5 24 9.5Z"
+    />
+    <path
+      fill="#4285F4"
+      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.25 5.48-4.72 7.18l7.36 5.71c4.3-3.97 7.4-9.83 7.4-17.36Z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M11.07 28.59A14.5 14.5 0 0 1 10.3 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 3.09 10.78l7.98-6.19Z"
+    />
+    <path
+      fill="#34A853"
+      d="M24 48c6.47 0 11.9-2.13 15.87-5.79l-7.36-5.71c-2.05 1.38-4.67 2.2-8.51 2.2-5.91 0-11-4.22-12.93-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"
+    />
+  </svg>
+
+  Continue with Google
+</button>
+
 
           <p className="mt-7 text-center text-sm text-[#897A72]">
             Already have an account?{" "}

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { AddServices } from "@/lib/actions/services";
 
 const categories = [
   "Photography & Videography",
@@ -74,27 +75,75 @@ const AddServiceForm = () => {
     setPreview("");
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    if (!image) {
-      toast.error("Please upload a service image.");
+  if (!image) {
+    toast.error("Please upload a service image.");
+    return;
+  }
+
+  if (Number(formData.price) <= 0) {
+    toast.error("Please enter a valid price.");
+    return;
+  }
+
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_IMAGE_API_KEY;
+
+    if (!apiKey) {
+      toast.error("Image API key is missing.");
       return;
     }
 
-    if (Number(formData.price) <= 0) {
-      toast.error("Please enter a valid price.");
-      return;
+    const imageData = new FormData();
+    imageData.append("image", image);
+
+    const imageResponse = await fetch(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      {
+        method: "POST",
+        body: imageData,
+      }
+    );
+
+    const imageResult = await imageResponse.json();
+
+    if (!imageResponse.ok || !imageResult.success) {
+      throw new Error("Image upload failed.");
     }
 
-    console.log("Service Data:", {
+    const serviceData = {
       ...formData,
       price: Number(formData.price),
-      image: image,
-    });
+      image: imageResult.data.url,
+    };
 
-    toast.success("Service submitted successfully!");
-  };
+    const result = await AddServices(serviceData);
+
+    if (result?.success) {
+      toast.success("Service submitted successfully!");
+
+      setFormData({
+        serviceName: "",
+        category: "",
+        description: "",
+        price: "",
+        location: "",
+      });
+
+      setImage(null);
+      setPreview("");
+    } else {
+      toast.error(result?.message || "Failed to submit service.");
+    }
+  } catch (error) {
+    console.error("Add service error:", error);
+    toast.error(
+      error instanceof Error ? error.message : "Something went wrong."
+    );
+  }
+};
 
   return (
     <div className="min-h-screen w-full min-w-0 flex-1 bg-[#F8F4EF] px-4 py-8 sm:px-6 lg:px-8">
@@ -128,7 +177,7 @@ const AddServiceForm = () => {
         </div>
 
         {/* Form */}
-        <div className="w-full min-w-0 rounded-2xl border border-[#EDE3DC] bg-white p-5 shadow-sm sm:p-8 lg:p-10">
+        <div className="w-full min-w-0 rounded-2xl border border-[#EDE3DC] bg-[#e7dddd] p-5 shadow-sm sm:p-8 lg:p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Service Name */}
             <div>

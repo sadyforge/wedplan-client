@@ -36,9 +36,23 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     router.push("/");
   }
 };
-  const handleGoogleLogin = () => {
-    console.log("Google Login Clicked");
-  };
+  
+const handleGoogleSignin = async () => {
+  try {
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+
+    if (error) {
+      toast.error(error.message || "Google sign in failed");
+    }
+  } catch (error) {
+    console.error("Google sign in error:", error);
+    toast.error("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-[#F8F4EF] px-4 py-12">
@@ -149,7 +163,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
           <button
             type="button"
-            onClick={handleGoogleLogin}
+            onClick={handleGoogleSignin}
             className="flex w-full items-center justify-center gap-3 rounded-full border border-[#EDE3DC] bg-white py-4 text-sm font-semibold text-[#302925] transition hover:bg-[#FDFBF9]"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5">
