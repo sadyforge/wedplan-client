@@ -1,11 +1,12 @@
-import { requireDashboardRole } from "@/lib/dashboard-auth"
+import { requireDashboardRole } from "@/lib/dashboard-auth";
+import CustomerOverview from "./CustomerOverview";
 
-export const instant = false
+export const instant = false;
 
 const CustomerPage = async () => {
-  await requireDashboardRole(["customer"])
+  await requireDashboardRole(["customer"]);
 
-  return <div>CustomerPage</div>
-}
+  return <CustomerOverview />;
+};
 
-export default CustomerPage
+export default CustomerPage;

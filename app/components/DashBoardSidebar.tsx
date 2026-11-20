@@ -41,12 +41,12 @@ type MenuItem = {
 
 const menuItemsByRole: Record<UserRole, MenuItem[]> = {
   customer: [
-    { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
+    { name: "Overview", url: "/dashboard/customer", icon: LayoutDashboard },
     { name: "My Bookings", url: "/dashboard/bookings", icon: CalendarCheck },
     { name: "Profile Settings", url: "/profile", icon: Settings },
   ],
   vendor: [
-    { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
+    { name: "Overview", url: "/dashboard/vendor", icon: LayoutDashboard },
     { name: "My Services", url: "/dashboard/services", icon: Wrench },
     { name: "Add Service", url: "/dashboard/services/add", icon: Plus },
     { name: "Booking Requests", url: "/dashboard/bookings", icon: ListChecks },
@@ -54,7 +54,7 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     { name: "Profile Settings", url: "/profile", icon: Settings },
   ],
   admin: [
-    { name: "Overview", url: "/dashboard", icon: LayoutDashboard },
+    { name: "Overview", url: "/dashboard/admin", icon: LayoutDashboard },
     { name: "Manage Users", url: "/dashboard/admin/manage-users", icon: Users },
     { name: "Manage Services", url: "/dashboard/admin/services", icon: ShieldCheck },
     { name: "Transactions", url: "/dashboard/transactions", icon: CreditCard },

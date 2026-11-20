@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowLeft,
   MapPin,
@@ -28,8 +29,10 @@ const ServicesDetailContent = async ({
   let service = null;
 
   try {
+    const requestHeaders = await headers();
     const res = await fetch(`${baseUrl}/services/${id}`, {
       cache: "no-store",
+      headers: { cookie: requestHeaders.get("cookie") || "" },
     });
 
     if (res.ok) {

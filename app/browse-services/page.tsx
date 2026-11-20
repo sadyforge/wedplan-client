@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
-import { GetServices } from "@/lib/actions/services";
+import { GetApprovedServices } from "@/lib/actions/services";
 import BrowseServiceCard from "@/app/components/BrowseServiceCard";
 
 interface Service {
@@ -28,7 +28,7 @@ const BrowseServices = () => {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const data = await GetServices();
+        const data = await GetApprovedServices();
 
         const approvedServices = Array.isArray(data)
           ? data.filter((service: Service) => service.status === "approved")
