@@ -75,6 +75,7 @@ const Navbar = () => {
       return;
     }
 
+    await fetch("/api/auth/backend-token", { method: "DELETE" });
     toast.success("Successfully signed out!");
     setIsOpen(false);
     setIsProfileOpen(false);

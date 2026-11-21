@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { authFetch } from "@/lib/core/server";
 import {
   ArrowLeft,
   MapPin,
@@ -29,15 +29,15 @@ const ServicesDetailContent = async ({
   let service = null;
 
   try {
-    const requestHeaders = await headers();
-    const res = await fetch(`${baseUrl}/services/${id}`, {
+    const res = await authFetch(`${baseUrl}/services/${id}`, {
       cache: "no-store",
-      headers: { cookie: requestHeaders.get("cookie") || "" },
     });
 
     if (res.ok) {
       const result = await res.json();
-      service = result.data;
+      // The authenticated service endpoint returns the service document
+      // directly; keep accepting the wrapped shape for API compatibility.
+      service = result.data || result;
     }
   } catch (error) {
     console.error("Service fetch error:", error);

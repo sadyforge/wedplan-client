@@ -1,5 +1,8 @@
 
+"use server";
+
 import { Service } from "./types";
+import { authFetch } from "@/lib/core/server";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
@@ -22,12 +25,11 @@ const readResponse = async (res: Response) => {
 // add service
 export const AddServices = async (data: ServiceData) => {
   try {
-    const res = await fetch(`${baseUrl}/services`, {
+    const res = await authFetch(`${baseUrl}/services`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
       body: JSON.stringify(data),
     });
 
@@ -48,19 +50,16 @@ export const AddServices = async (data: ServiceData) => {
 
     return {
       success: false,
-      message: error instanceof Error
-        ? error.message
-        : "Failed to add service.",
+      message: getErrorMessage(error, "Failed to add service."),
     };
   }
 };
+
 // get all services
-export const GetServices = async (cookie?: string) => {
+export const GetServices = async () => {
   try {
-    const res = await fetch(`${baseUrl}/services`, {
+    const res = await authFetch(`${baseUrl}/services`, {
       cache: "no-store",
-      credentials: "include",
-      headers: cookie ? { cookie } : undefined,
     });
 
     return await readResponse(res);
@@ -85,14 +84,12 @@ export const GetApprovedServices = async () => {
 };
 
 // get vendor services
-export const GetVendorServices = async (email: string, cookie?: string) => {
+export const GetVendorServices = async (email: string) => {
   try {
-    const res = await fetch(
+    const res = await authFetch(
       `${baseUrl}/vendor-services/${encodeURIComponent(email)}`,
       {
         cache: "no-store",
-        credentials: "include",
-        headers: cookie ? { cookie } : undefined,
       }
     );
 
@@ -103,20 +100,21 @@ export const GetVendorServices = async (email: string, cookie?: string) => {
   }
 };
 
-export const GetMyServices = GetVendorServices;
+export const GetMyServices = async (email: string) => {
+  return GetVendorServices(email);
+};
 
 // get single service
-export const GetSingleService = async (id: string, cookie?: string) => {
+export const GetSingleService = async (id: string) => {
   try {
-    const res = await fetch(`${baseUrl}/services/${id}`, {
+    const res = await authFetch(`${baseUrl}/services/${id}`, {
       cache: "no-store",
-      credentials: "include",
-      headers: cookie ? { cookie } : undefined,
     });
 
     return await readResponse(res);
   } catch (error) {
     console.error("GetSingleService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to fetch service."),
@@ -134,6 +132,7 @@ export const GetApprovedService = async (id: string) => {
     return await readResponse(res);
   } catch (error) {
     console.error("GetApprovedService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to fetch service."),
@@ -142,18 +141,23 @@ export const GetApprovedService = async (id: string) => {
 };
 
 // update service
-export const UpdateService = async (id: string, data: Partial<Service>) => {
+export const UpdateService = async (
+  id: string,
+  data: Partial<Service>
+) => {
   try {
-    const res = await fetch(`${baseUrl}/services/${id}`, {
+    const res = await authFetch(`${baseUrl}/services/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
 
     return await readResponse(res);
   } catch (error) {
     console.error("UpdateService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to update service."),
@@ -161,19 +165,24 @@ export const UpdateService = async (id: string, data: Partial<Service>) => {
   }
 };
 
-export const UpdateServices = UpdateService;
+export const UpdateServices = async (
+  id: string,
+  data: Partial<Service>
+) => {
+  return UpdateService(id, data);
+};
 
 // delete service
 export const DeleteService = async (id: string) => {
   try {
-    const res = await fetch(`${baseUrl}/services/${id}`, {
+    const res = await authFetch(`${baseUrl}/services/${id}`, {
       method: "DELETE",
-      credentials: "include",
     });
 
     return await readResponse(res);
   } catch (error) {
     console.error("DeleteService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to delete service."),
@@ -181,19 +190,21 @@ export const DeleteService = async (id: string) => {
   }
 };
 
-export const DeleteServices = DeleteService;
+export const DeleteServices = async (id: string) => {
+  return DeleteService(id);
+};
 
 // approve service (admin only)
 export const ApproveService = async (id: string) => {
   try {
-    const res = await fetch(`${baseUrl}/services/${id}/approve`, {
+    const res = await authFetch(`${baseUrl}/services/${id}/approve`, {
       method: "PATCH",
-      credentials: "include",
     });
 
     return await readResponse(res);
   } catch (error) {
     console.error("ApproveService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to approve service."),
@@ -204,14 +215,14 @@ export const ApproveService = async (id: string) => {
 // reject service (admin only)
 export const RejectService = async (id: string) => {
   try {
-    const res = await fetch(`${baseUrl}/services/${id}/reject`, {
+    const res = await authFetch(`${baseUrl}/services/${id}/reject`, {
       method: "PATCH",
-      credentials: "include",
     });
 
     return await readResponse(res);
   } catch (error) {
     console.error("RejectService error:", error);
+
     return {
       success: false,
       message: getErrorMessage(error, "Failed to reject service."),

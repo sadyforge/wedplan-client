@@ -1,6 +1,5 @@
-import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
+import { getSession } from "@/lib/core/server"
 
 export type UserRole = "customer" | "vendor" | "admin"
 
@@ -11,9 +10,7 @@ function isUserRole(role: unknown): role is UserRole {
 export async function requireDashboardRole(
   allowedRoles: readonly UserRole[] = ["customer", "vendor", "admin"],
 ) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  const session = await getSession()
 
   if (!session?.user) {
     redirect("/sign-in")

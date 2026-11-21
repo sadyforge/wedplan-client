@@ -11,7 +11,8 @@ export default function UpgradeButton() {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      await CreateCheckoutSession();
+      const result = await CreateCheckoutSession();
+      if (result?.url) window.location.href = result.url;
     } catch (error) {
       setLoading(false);
       toast.error(error instanceof Error ? error.message : "Unable to start checkout.");

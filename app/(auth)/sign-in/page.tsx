@@ -32,6 +32,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   }
 
   if (data) {
+    await fetch("/api/auth/backend-token", { method: "POST" });
     toast.success("Successfully signed in!");
     router.push("/");
   }

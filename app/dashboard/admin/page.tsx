@@ -1,6 +1,5 @@
 
 import { requireDashboardRole } from "@/lib/dashboard-auth";
-import { headers } from "next/headers";
 import { GetAllUsers } from "@/lib/actions/users";
 import { GetServices } from "@/lib/actions/services";
 import { GetTransactions } from "@/lib/actions/payments";
@@ -34,14 +33,11 @@ const getArray = (result: unknown): Data[] => {
 
 const AdminPage = async () => {
   await requireDashboardRole(["admin"]);
-  const requestHeaders = await headers();
-  const cookie = requestHeaders.get("cookie") || undefined;
-
   const [usersResult, servicesResult, transactionsResult] =
     await Promise.allSettled([
-      GetAllUsers(cookie),
-      GetServices(cookie),
-      GetTransactions(cookie),
+      GetAllUsers(),
+      GetServices(),
+      GetTransactions(),
     ]);
 
   const users =

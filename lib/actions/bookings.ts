@@ -1,4 +1,8 @@
 
+"use server";
+
+import { authFetch } from "@/lib/core/server";
+
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
@@ -10,12 +14,11 @@ export const CreateBooking = async (data: {
   message: string;
 }) => {
   try {
-    const res = await fetch(`${baseUrl}/bookings`, {
+    const res = await authFetch(`${baseUrl}/bookings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
       body: JSON.stringify(data),
     });
 
@@ -48,9 +51,8 @@ export const CreateBooking = async (data: {
 // Get customer bookings
 export const GetMyBookings = async () => {
   try {
-    const res = await fetch(`${baseUrl}/my-bookings`, {
+    const res = await authFetch(`${baseUrl}/my-bookings`, {
       cache: "no-store",
-      credentials: "include",
     });
 
     const result = await res.json();
@@ -75,9 +77,8 @@ export const GetMyBookings = async () => {
 // Cancel customer booking
 export const CancelBooking = async (id: string) => {
   try {
-    const res = await fetch(`${baseUrl}/bookings/${id}/cancel`, {
+    const res = await authFetch(`${baseUrl}/bookings/${id}/cancel`, {
       method: "PATCH",
-      credentials: "include",
     });
 
     const result = await res.json();
@@ -102,9 +103,8 @@ export const CancelBooking = async (id: string) => {
 // Get vendor bookings
 export const GetVendorBookings = async () => {
   try {
-    const res = await fetch(`${baseUrl}/vendor-bookings`, {
+    const res = await authFetch(`${baseUrl}/vendor-bookings`, {
       cache: "no-store",
-      credentials: "include",
     });
 
     const result = await res.json();
@@ -134,12 +134,11 @@ export const UpdateBookingStatus = async (
   status: "Accepted" | "Rejected"
 ) => {
   try {
-    const res = await fetch(`${baseUrl}/bookings/${id}/status`, {
+    const res = await authFetch(`${baseUrl}/bookings/${id}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
       body: JSON.stringify({ status }),
     });
 

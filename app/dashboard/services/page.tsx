@@ -1,7 +1,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { headers } from "next/headers";
 import {
   Plus,
   MapPin,
@@ -25,8 +24,7 @@ export const instant = false;
 export default async function ServicesPage() {
   const user = await requireDashboardRole(["vendor", "admin"]);
 
-  const requestHeaders = await headers();
-  const services = await GetServices(requestHeaders.get("cookie") || undefined);
+  const services = await GetServices();
   const serviceList = Array.isArray(services) ? services : [];
 
   const totalServices = serviceList.length;

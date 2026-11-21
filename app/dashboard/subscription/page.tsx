@@ -1,6 +1,6 @@
 
 import { requireDashboardRole } from "@/lib/dashboard-auth";
-import { headers } from "next/headers";
+import { authFetch } from "@/lib/core/server";
 import {
   Check,
   Crown,
@@ -33,21 +33,14 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
     subscriptionCancelledAt?: string | Date;
     subscriptionCancelAtPeriodEnd?: boolean;
   };
-  const requestHeaders = await headers();
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   let remoteSubscription: Record<string, unknown> = {};
   let transactions: Array<Record<string, unknown>> = [];
 
   try {
     const [subscriptionResponse, transactionsResponse] = await Promise.all([
-      fetch(`${baseUrl}/payments/my-subscription`, {
-        headers: { cookie: requestHeaders.get("cookie") || "" },
-        cache: "no-store",
-      }),
-      fetch(`${baseUrl}/payments/transactions`, {
-        headers: { cookie: requestHeaders.get("cookie") || "" },
-        cache: "no-store",
-      }),
+      authFetch(`${baseUrl}/payments/my-subscription`),
+      authFetch(`${baseUrl}/payments/transactions`),
     ]);
     const subscriptionResult = await subscriptionResponse.json().catch(() => ({}));
     const transactionResult = await transactionsResponse.json().catch(() => ({}));

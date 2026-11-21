@@ -1,12 +1,14 @@
 
-const baseUrl =  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+"use server";
+
+import { authFetch } from "@/lib/core/server";
+
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 // Get all users
-export const GetAllUsers = async (cookie?: string) => {
-  const res = await fetch(`${baseUrl}/users`, {
+export const GetAllUsers = async (_cookie?: string) => {
+  const res = await authFetch(`${baseUrl}/users`, {
     cache: "no-store",
-    credentials: "include",
-    headers: cookie ? { cookie } : undefined,
   });
 
   if (!res.ok) throw new Error("Failed to fetch users");
@@ -16,9 +18,8 @@ export const GetAllUsers = async (cookie?: string) => {
 
 // Get single user
 export const GetSingleUser = async (id: string) => {
-  const res = await fetch(`${baseUrl}/users/${id}`, {
+  const res = await authFetch(`${baseUrl}/users/${id}`, {
     cache: "no-store",
-    credentials: "include",
   });
 
   if (!res.ok) throw new Error("Failed to fetch user");
@@ -28,9 +29,8 @@ export const GetSingleUser = async (id: string) => {
 
 // Block user
 export const BlockUser = async (id: string) => {
-  const res = await fetch(`${baseUrl}/users/${id}/block`, {
+  const res = await authFetch(`${baseUrl}/users/${id}/block`, {
     method: "PATCH",
-    credentials: "include",
   });
 
   if (!res.ok) throw new Error("Failed to block user");
@@ -40,9 +40,8 @@ export const BlockUser = async (id: string) => {
 
 // Unblock user
 export const UnblockUser = async (id: string) => {
-  const res = await fetch(`${baseUrl}/users/${id}/unblock`, {
+  const res = await authFetch(`${baseUrl}/users/${id}/unblock`, {
     method: "PATCH",
-    credentials: "include",
   });
 
   if (!res.ok) throw new Error("Failed to unblock user");
@@ -52,6 +51,6 @@ export const UnblockUser = async (id: string) => {
 
 
 export const getUserPremiumById=async(userId:string)=>{
-  const res=await fetch(`${baseUrl}/users/${userId}/premium`)
+  const res=await authFetch(`${baseUrl}/users/${userId}/premium`)
   return res.json()
 }

@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import {
   UserRound,
   Store,
-  ShieldCheck,
   Heart,
   Mail,
   LockKeyhole,
@@ -24,7 +23,6 @@ import { useRouter } from "next/navigation";
 const ROLE_OPTIONS = [
   { value: "customer", label: "Customer", icon: UserRound },
   { value: "vendor", label: "Vendor", icon: Store },
-  { value: "admin", label: "Admin", icon: ShieldCheck },
 ] as const;
 
 type UserRole = (typeof ROLE_OPTIONS)[number]["value"];
@@ -163,6 +161,7 @@ const SignUp = () => {
         return;
       }
 
+      await fetch("/api/auth/backend-token", { method: "POST" });
       toast.success("Account created successfully!");
       router.replace("/");
       router.refresh();
@@ -254,7 +253,7 @@ const handleGoogleSignin = async () => {
                 Join WedPlan as
               </label>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {ROLE_OPTIONS.map((option) => {
                   const selected = role === option.value;
 

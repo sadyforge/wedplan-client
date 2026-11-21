@@ -1,5 +1,5 @@
 
-import { GetServices } from "@/lib/actions/services";
+import { GetApprovedServices } from "@/lib/actions/services";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, Tag } from "lucide-react";
@@ -20,7 +20,7 @@ const HomeServices = async () => {
   // This list is fetched from the live services API and must render at request time.
   // Without this boundary, Cache Components attempts to prerender the API fetch.
   await connection();
-  const result = await GetServices();
+  const result = await GetApprovedServices();
 
   const services: Service[] = Array.isArray(result)
     ? result.filter((service: Service) => service.status === "approved").slice(0, 6)
