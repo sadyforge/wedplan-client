@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WedPlan – Wedding Planning & Service Management Platform
 
-## Getting Started
+WedPlan is a wedding planning platform where customers can discover and book wedding services, vendors can manage their services and bookings, and administrators can manage users, services, and platform activities.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Authentication & Authorization:** Secure authentication with role-based access for Customers, Vendors, and Admins.
+- **Service Management:** Vendors can create, update, delete, and manage their wedding services.
+- **Service Approval:** Admins can review, approve, or reject vendor services.
+- **Booking System:** Customers can book wedding services and manage their bookings.
+- **Vendor Dashboard:** Vendors can manage their services, bookings, and subscription status.
+- **Premium Subscription:** Vendors can upgrade to Premium using Stripe payments.
+- **Service Limit:** Free vendors can add up to 3 services, while Premium vendors can add unlimited services.
+- **Payment Management:** Stripe Checkout, payment verification, webhook integration, and transaction history.
+- **Admin Dashboard:** Admins can manage users, update user roles, block or unblock accounts, and manage services.
+- **Responsive Design:** User-friendly interface for desktop, tablet, and mobile devices.
+- **Loading & Error Handling:** Meaningful loading states, error handling, and toast notifications.
+
+## User Roles
+
+| Role | Permissions |
+|---|---|
+| Customer | Browse services, book services, manage bookings |
+| Vendor | Manage services, manage bookings, upgrade subscription |
+| Admin | Manage users, roles, services, approvals, and transactions |
+
+## Premium Subscription
+
+WedPlan provides a subscription system for vendors.
+
+- Free vendors can add a maximum of 3 services.
+- Premium vendors can add unlimited services.
+- Vendors can upgrade through Stripe Checkout.
+- Payment status is verified through the backend.
+- Stripe webhooks handle payment events and subscription updates.
+
+## Technology Stack
+
+### Frontend
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+
+### Authentication & Payment
+- Better Auth
+- JWT
+- Stripe
+
+### Tools
+- Git & GitHub
+- Postman
+- npm / pnpm
+
+## Project Structure
+
+```text
+WedPlan/
+├── client/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   └── services/
+│   └── package.json
+│
+├── server/
+│   ├── index.js
+│   ├── middleware/
+│   ├── routes/
+│   └── package.json
+│
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Payment Integration
 
-## Learn More
+WedPlan uses Stripe Checkout to process Premium subscription payments.
 
-To learn more about Next.js, take a look at the following resources:
+1. Vendor selects the Premium subscription.
+2. Backend creates a Stripe Checkout session.
+3. Vendor completes payment through Stripe.
+4. Stripe sends payment events through a webhook.
+5. Backend verifies the payment and updates subscription status.
+6. Vendor receives Premium access after successful verification.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Future Improvements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Advanced service filtering and searching.
+- Improved booking management.
+- Enhanced dashboard analytics.
+- Email notifications.
+- More subscription management options.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is developed for educational and portfolio purposes.
