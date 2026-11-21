@@ -50,7 +50,7 @@ const menuItemsByRole: Record<UserRole, MenuItem[]> = {
     { name: "My Services", url: "/dashboard/services", icon: Wrench },
     { name: "Add Service", url: "/dashboard/services/add", icon: Plus },
     { name: "Booking Requests", url: "/dashboard/vendor/bookings", icon: ListChecks },
-    { name: "Subscription", url: "/dashboard/subscription", icon: CreditCard },
+    { name: "Subscription", url: "/dashboard/vendor/subscription", icon: CreditCard },
     { name: "Profile Settings", url: "/profile", icon: Settings },
   ],
   admin: [
@@ -122,6 +122,14 @@ export function DashBoardSidebar() {
   const userName = session.user.name || "WedPlan User"
   const userImage = session.user.image
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1)
+  const sessionUser = session.user as {
+    subscriptionPlan?: string
+    subscriptionStatus?: string
+  }
+  const isPremiumVendor =
+    role === "vendor" &&
+    String(sessionUser.subscriptionPlan || "free").toLowerCase() === "premium" &&
+    String(sessionUser.subscriptionStatus || "inactive").toLowerCase() === "active"
 
   return (
     <Sidebar>
@@ -175,6 +183,11 @@ export function DashBoardSidebar() {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-[#302925]">
               {userName}
+              {isPremiumVendor && (
+                <span className="ml-2 inline-flex rounded-full bg-[#F9E9EC] px-2 py-0.5 align-middle text-[9px] font-bold tracking-wide text-[#B66E7E]">
+                  PREMIUM
+                </span>
+              )}
             </p>
             <p className="text-xs text-[#897A72]">{roleLabel}</p>
           </div>

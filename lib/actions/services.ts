@@ -24,21 +24,36 @@ export const AddServices = async (data: ServiceData) => {
   try {
     const res = await fetch(`${baseUrl}/services`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       credentials: "include",
       body: JSON.stringify(data),
     });
 
-    return await readResponse(res);
+    const result = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return {
+        ...result,
+        success: false,
+        code: result.code,
+        message: result.message || "Failed to add service.",
+      };
+    }
+
+    return result;
   } catch (error) {
     console.error("AddServices error:", error);
+
     return {
       success: false,
-      message: getErrorMessage(error, "Failed to add service."),
+      message: error instanceof Error
+        ? error.message
+        : "Failed to add service.",
     };
   }
 };
-
 // get all services
 export const GetServices = async (cookie?: string) => {
   try {

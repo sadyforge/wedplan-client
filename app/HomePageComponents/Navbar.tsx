@@ -59,6 +59,13 @@ const Navbar = () => {
   const roleLabel = currentRole.label;
   const dashboardLabel = currentRole.dashboardLabel;
   const dashboardHref = currentRole.dashboardHref;
+  const vendorUser = user as
+    | { role?: string; subscriptionPlan?: string; subscriptionStatus?: string }
+    | undefined;
+  const isPremiumVendor =
+    role === "vendor" &&
+    String(vendorUser?.subscriptionPlan || "free").toLowerCase() === "premium" &&
+    String(vendorUser?.subscriptionStatus || "inactive").toLowerCase() === "active";
 
   const handleSignOut = async () => {
     const { error } = await authClient.signOut();
@@ -141,7 +148,12 @@ const Navbar = () => {
 
                   <div className="text-left">
                     <p className="max-w-32 truncate text-sm font-semibold text-[#302925]">
-                      {user.name}
+                      <span>{user.name}</span>
+                      {isPremiumVendor && (
+                        <span className="ml-2 inline-flex rounded-full bg-[#F9E9EC] px-2 py-0.5 align-middle text-[9px] font-bold tracking-wide text-[#B66E7E]">
+                          PREMIUM
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-[#897A72]">{roleLabel}</p>
                   </div>
@@ -166,6 +178,11 @@ const Navbar = () => {
                       <span className="mt-3 inline-flex rounded-full bg-[#F4E6E2] px-3 py-1 text-xs font-semibold text-[#B66F7F]">
                         {roleLabel}
                       </span>
+                      {isPremiumVendor && (
+                        <span className="ml-2 inline-flex rounded-full bg-[#F9E9EC] px-3 py-1 text-xs font-bold text-[#B66E7E]">
+                          PREMIUM
+                        </span>
+                      )}
                     </div>
 
                     <div className="p-2">
@@ -278,7 +295,12 @@ const Navbar = () => {
 
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-[#302925]">
-                        {user.name}
+                        <span>{user.name}</span>
+                        {isPremiumVendor && (
+                          <span className="ml-2 inline-flex rounded-full bg-[#F9E9EC] px-2 py-0.5 align-middle text-[9px] font-bold tracking-wide text-[#B66E7E]">
+                            PREMIUM
+                          </span>
+                        )}
                       </p>
                       <p className="truncate text-xs text-[#897A72]">
                         {user.email}

@@ -190,7 +190,7 @@ export default async function ServicesPage() {
             </div>
 
             <Link
-              href="/dashboard/subscription"
+              href="/dashboard/vendor/subscription"
               className="inline-flex shrink-0 items-center justify-center rounded-xl bg-[#302925] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#51443D]"
             >
               Explore Premium

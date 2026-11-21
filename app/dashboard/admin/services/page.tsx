@@ -1,5 +1,5 @@
 
-"use client";
+'use client'
 
 import { useEffect, useState } from "react";
 import {
@@ -18,6 +18,7 @@ import {
   GetServices,
   ApproveService,
   RejectService,
+  DeleteService,
 } from "@/lib/actions/services";
 
 interface Service {
@@ -91,6 +92,23 @@ const ManageServices = () => {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
       );
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (updating) return;
+    try {
+      setUpdating(id);
+      const result = await DeleteService(id);
+      if (result.success === false) {
+        throw new Error(result.message || "Failed to delete service");
+      }
+      setServices((prev) => prev.filter((service) => service._id !== id));
+      toast.success("Service deleted successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete service");
     } finally {
       setUpdating(null);
     }
@@ -323,6 +341,14 @@ const ManageServices = () => {
                             Reject
                           </button>
                         )}
+
+                        <button
+                          onClick={() => handleDelete(service._id)}
+                          disabled={updating === service._id}
+                          className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>

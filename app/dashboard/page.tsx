@@ -536,3 +536,9 @@
 // };
 
 // export default VendorDashboard;
+
+// The dashboard root is only a role-aware entry point; the actual dashboards
+// live under /dashboard/vendor, /dashboard/customer and /dashboard/admin.
+export default function DashboardEntry() {
+  return null;
+}

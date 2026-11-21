@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
   ArrowLeft,
@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { AddServices } from "@/lib/actions/services";
+import { AddServices, GetServices } from "@/lib/actions/services";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
 
 const categories = [
   "Photography & Videography",
@@ -27,8 +28,35 @@ const categories = [
 
 const AddServiceForm = () => {
   const router=useRouter()
+  const { data: session } = useSession();
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
+  const [countedServiceCount, setCountedServiceCount] = useState<number | null>(null);
+
+  const subscriptionPlan = String(
+    (session?.user as { subscriptionPlan?: string } | undefined)?.subscriptionPlan || "Free"
+  ).toLowerCase();
+  const subscriptionStatus = String(
+    (session?.user as { subscriptionStatus?: string } | undefined)?.subscriptionStatus ||
+      (subscriptionPlan === "premium" ? "active" : "inactive")
+  ).toLowerCase();
+  const isPremium =
+    subscriptionPlan === "premium" && subscriptionStatus === "active";
+
+  useEffect(() => {
+    GetServices().then((result) => {
+      const services = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.data)
+          ? result.data
+          : [];
+      setCountedServiceCount(
+        services.filter((service: { status?: string }) =>
+          service.status === "pending" || service.status === "approved"
+        ).length
+      );
+    });
+  }, []);
 
   const [formData, setFormData] = useState({
     serviceName: "",
@@ -80,6 +108,11 @@ const AddServiceForm = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
+  if (!isPremium && countedServiceCount !== null && countedServiceCount >= 3) {
+    toast.error("Free vendors can have up to 3 pending or approved services. Upgrade to Premium to add more.");
+    return;
+  }
+
   if (!image) {
     toast.error("Please upload a service image.");
     return;
@@ -122,31 +155,48 @@ const AddServiceForm = () => {
     };
 
     const result = await AddServices(serviceData);
+if (result?.success) {
+  toast.success("Service added successfully!");
 
-    if (result?.success) {
-      toast.success("Service added successfully!");
+  setFormData({
+    serviceName: "",
+    category: "",
+    description: "",
+    price: "",
+    location: "",
+  });
 
-      setFormData({
-        serviceName: "",
-        category: "",
-        description: "",
-        price: "",
-        location: "",
-      });
+  setImage(null);
+  setPreview("");
+  setCountedServiceCount((count) => (count === null ? count : count + 1));
+  router.push("/dashboard/services");
+} else if (
+  result?.code === "SERVICE_LIMIT_REACHED" ||
+  /service limit|free plan limit|maximum.*service/i.test(String(result?.message || ""))
+) {
+  toast.error(
+    "You have reached your free plan limit. Please upgrade to Premium to add more services."
+  );
+  router.push("/dashboard/vendor/subscription");
+} else {
+  toast.error(result?.message || "Failed to submit service.");
+}
+} catch (error) {
+  console.error("Add service error:", error);
 
-      setImage(null);
-      setPreview("");
-      router.push("/dashboard/services")
-      
-    } else {
-      toast.error(result?.message || "Failed to submit service.");
-    }
-  } catch (error) {
-    console.error("Add service error:", error);
+  const message =
+    error instanceof Error ? error.message : "Something went wrong.";
+
+  if (/service limit|free plan limit|maximum.*service|free service limit/i.test(message)) {
     toast.error(
-      error instanceof Error ? error.message : "Something went wrong."
+      "You have reached your free plan limit. Please upgrade to Premium to add more services."
     );
+    router.push("/dashboard/vendor/subscription");
+    return;
   }
+
+  toast.error(message);
+}
 };
 
   return (
@@ -181,6 +231,13 @@ const AddServiceForm = () => {
         </div>
 
         {/* Form */}
+        {!isPremium && countedServiceCount !== null && countedServiceCount >= 3 && (
+          <div className="mb-5 flex flex-col justify-between gap-4 rounded-xl border border-[#E8D7BD] bg-[#F5EDE2] p-4 sm:flex-row sm:items-center">
+            <p className="text-sm text-[#6F625B]">You have reached the Free plan limit of 3 pending or approved services. Rejected services do not count.</p>
+            <Link href="/dashboard/vendor/subscription" className="shrink-0 rounded-xl bg-[#302925] px-4 py-2 text-center text-sm font-semibold text-white">Upgrade to Premium</Link>
+          </div>
+        )}
+
         <div className="w-full min-w-0 rounded-2xl border border-[#EDE3DC] bg-[#e7dddd] p-5 shadow-sm sm:p-8 lg:p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Service Name */}
@@ -380,7 +437,8 @@ const AddServiceForm = () => {
 
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C98291] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#B66F7F]"
+                disabled={!isPremium && countedServiceCount !== null && countedServiceCount >= 3}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C98291] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#B66F7F] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Submit Service
               </button>

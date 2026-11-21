@@ -31,6 +31,15 @@ const ProfilePage = () => {
       : role === "vendor"
         ? "Vendor"
         : "Customer";
+  const profileUser = user as typeof user & {
+    subscriptionPlan?: string;
+    subscriptionStatus?: string;
+    createdAt?: string | Date;
+  };
+  const isPremiumVendor =
+    role === "vendor" &&
+    String(profileUser?.subscriptionPlan || "free").toLowerCase() === "premium" &&
+    String(profileUser?.subscriptionStatus || "inactive").toLowerCase() === "active";
 
   if (isPending) {
     return (
@@ -159,6 +168,11 @@ const ProfilePage = () => {
                 <ShieldCheck size={15} />
                 {roleLabel}
               </span>
+              {isPremiumVendor && (
+                <span className="ml-2 mt-4 inline-flex rounded-full bg-[#F9E9EC] px-4 py-2 text-xs font-bold tracking-wide text-[#B66E7E]">
+                  PREMIUM
+                </span>
+              )}
             </div>
 
             <div className="my-8 h-px bg-[#EDE3DC]" />
@@ -235,6 +249,28 @@ const ProfilePage = () => {
                       </p>
                     </div>
                   </div>
+
+                  {role === "vendor" && (
+                    <div className="flex items-start gap-4 rounded-2xl border border-[#EDE3DC] bg-[#FDFBF9] p-5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F4E6E2] text-[#B66F7F]">
+                        <ShieldCheck size={20} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-[#897A72]">Subscription</p>
+                        <p className="mt-2 text-sm font-semibold text-[#302925]">
+                          {isPremiumVendor ? "Premium" : "Free"}
+                        </p>
+                        <p className="mt-1 text-xs capitalize text-[#897A72]">
+                          {isPremiumVendor ? "Active" : "Inactive"}
+                        </p>
+                        {isPremiumVendor && (
+                          <span className="mt-2 inline-flex rounded-full bg-[#F9E9EC] px-2 py-0.5 text-[9px] font-bold tracking-wide text-[#B66E7E]">
+                            PREMIUM
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-start gap-4 rounded-2xl border border-[#EDE3DC] bg-[#FDFBF9] p-5">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F4E6E2] text-[#B66F7F]">

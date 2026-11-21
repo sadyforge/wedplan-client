@@ -28,6 +28,49 @@ export const auth = betterAuth({
         defaultValue: "customer",
         input: true,
       },
+      subscriptionPlan: {
+        type: "string",
+        required: false,
+        defaultValue: "Free",
+        input: false,
+      },
+      subscriptionStatus: {
+        type: "string",
+        required: false,
+        defaultValue: "inactive",
+        input: false,
+      },
+      subscriptionId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      stripeCustomerId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      subscriptionStartedAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+      subscriptionExpiresAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+      subscriptionCancelledAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+      subscriptionCancelAtPeriodEnd: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
 });
