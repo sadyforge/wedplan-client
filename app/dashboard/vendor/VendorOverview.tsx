@@ -18,6 +18,7 @@ import {
 import { toast } from "react-hot-toast";
 import { GetServices } from "@/lib/actions/services";
 import { GetVendorBookings } from "@/lib/actions/bookings";
+import { GetMySubscription } from "@/lib/actions/payments";
 
 interface Props {
   vendorId: string;
@@ -55,13 +56,19 @@ const VendorOverview = ({
   const [services, setServices] = useState<Service[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<{ plan: string; status: string; expiresAt?: string; cancelAtPeriodEnd: boolean }>({
+    plan: subscriptionPlan,
+    status: "inactive",
+    cancelAtPeriodEnd: false,
+  });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [serviceResult, bookingResult] = await Promise.all([
+        const [serviceResult, bookingResult, subscriptionResult] = await Promise.all([
           GetServices(),
           GetVendorBookings(),
+          GetMySubscription(),
         ]);
 
         if (serviceResult.success === false) {
@@ -89,6 +96,19 @@ const VendorOverview = ({
 
         setServices(myServices);
         setBookings(bookingResult.data || []);
+
+        const raw = (subscriptionResult?.data || subscriptionResult || {}) as Record<string, unknown>;
+        const nested = (raw.subscription || {}) as Record<string, unknown>;
+        const status = String(raw.subscriptionStatus || raw.status || nested.subscriptionStatus || nested.status || "inactive").toLowerCase();
+        const plan = String(raw.subscriptionPlan || raw.plan || nested.subscriptionPlan || nested.plan || "free").toLowerCase();
+        const expiresAt = String(raw.subscriptionExpiresAt || raw.currentPeriodEnd || nested.subscriptionExpiresAt || nested.currentPeriodEnd || "") || undefined;
+        const active = plan === "premium" && (status === "active" || status === "trialing") && (!expiresAt || new Date(expiresAt).getTime() > Date.now());
+        setSubscription({
+          plan: active ? "Premium" : "Free",
+          status: active ? status : "inactive",
+          expiresAt,
+          cancelAtPeriodEnd: Boolean(raw.subscriptionCancelAtPeriodEnd || raw.cancelAtPeriodEnd || nested.subscriptionCancelAtPeriodEnd || nested.cancelAtPeriodEnd),
+        });
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -320,11 +340,13 @@ const VendorOverview = ({
             </div>
 
             <h2 className="mt-5 text-2xl font-bold text-[#302925]">
-              {subscriptionPlan}
+              {subscription.plan}
             </h2>
 
             <p className="mt-2 text-sm text-[#897A72]">
-              Your current vendor subscription plan.
+              {subscription.plan === "Premium"
+                ? `${subscription.status === "trialing" ? "Premium trial" : "Premium"} active${subscription.cancelAtPeriodEnd && subscription.expiresAt ? ` until ${new Date(subscription.expiresAt).toLocaleDateString()}` : "."}`
+                : "You are currently on the Free plan."}
             </p>
 
             <Link
@@ -334,6 +356,14 @@ const VendorOverview = ({
               Manage Subscription
               <ArrowRight className="h-4 w-4" />
             </Link>
+            {subscription.plan === "Free" && (
+              <Link
+                href="/dashboard/vendor/subscription"
+                className="mt-3 flex items-center justify-center rounded-xl bg-[#302925] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#453a34]"
+              >
+                Upgrade to Premium
+              </Link>
+            )}
           </div>
 
           <div className="rounded-2xl border border-[#EDE3DC] bg-white p-6 shadow-sm">

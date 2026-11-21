@@ -140,8 +140,16 @@ const SignUp = () => {
     const email = String(formData.get("email") || "").trim();
     const password = String(formData.get("password") || "");
 
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    // Assignment password rules: minimum 6 characters with at least one
+    // uppercase letter and one lowercase letter.
+    if (
+      password.length < 6 ||
+      !/[A-Z]/.test(password) ||
+      !/[a-z]/.test(password)
+    ) {
+      toast.error(
+        "Password must be at least 6 characters and include an uppercase and a lowercase letter"
+      );
       return;
     }
 
@@ -163,7 +171,11 @@ const SignUp = () => {
 
       await fetch("/api/auth/backend-token", { method: "POST" });
       toast.success("Account created successfully!");
-      router.replace("/");
+
+      // Redirect to the dashboard that matches the chosen role.
+      router.replace(
+        role === "vendor" ? "/dashboard/vendor" : "/dashboard/customer"
+      );
       router.refresh();
     } catch (error) {
       console.error("Signup error:", error);
@@ -358,7 +370,7 @@ const handleGoogleSignin = async () => {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  placeholder="Minimum 8 characters"
+                  placeholder="Minimum 6 characters"
                   className="w-full rounded-xl border border-[#EDE3DC] bg-[#F8F4EF]/50 py-3 pl-12 pr-12 text-sm text-[#302925] outline-none transition focus:border-[#C98291] focus:ring-2 focus:ring-[#C98291]/20"
                 />
 

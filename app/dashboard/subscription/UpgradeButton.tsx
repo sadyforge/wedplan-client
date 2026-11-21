@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,10 +13,19 @@ export default function UpgradeButton() {
     setLoading(true);
     try {
       const result = await CreateCheckoutSession();
-      if (result?.url) window.location.href = result.url;
+
+      if (!result?.url) {
+        throw new Error("Checkout URL not found.");
+      }
+
+      window.location.href = result.url;
     } catch (error) {
       setLoading(false);
-      toast.error(error instanceof Error ? error.message : "Unable to start checkout.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to start checkout."
+      );
     }
   };
 
@@ -26,10 +36,17 @@ export default function UpgradeButton() {
       className="relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#C98291] py-3 text-sm font-bold text-white transition hover:bg-[#B66E7E] disabled:cursor-not-allowed disabled:opacity-70"
       disabled={loading}
     >
-        {loading ? <><Loader2 size={17} className="animate-spin" />Redirecting to checkout...</> : <>
+      {loading ? (
+        <>
+          <Loader2 size={17} className="animate-spin" />
+          Redirecting to checkout...
+        </>
+      ) : (
+        <>
           Upgrade to Premium
           <ArrowUpRight size={17} />
-        </>}
+        </>
+      )}
     </button>
   );
 }

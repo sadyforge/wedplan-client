@@ -1,3 +1,4 @@
+
 "use server";
 
 import { authFetch } from "@/lib/core/server";
@@ -11,12 +12,22 @@ export const CreateCheckoutSession = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
+
     const result = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(result.message || "Failed to create checkout session.");
-    if (typeof result.url !== "string" || !result.url) throw new Error("Checkout URL not found.");
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to create checkout session.");
+    }
+
+    if (typeof result.url !== "string" || !result.url) {
+      throw new Error("Checkout URL not found.");
+    }
+
     return result;
   } catch (error) {
-    throw error instanceof Error ? error : new Error("Failed to create checkout session.");
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to create checkout session.");
   }
 };
 
@@ -26,38 +37,85 @@ export const VerifyCheckoutSession = async (sessionId: string) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId }),
+      cache: "no-store",
     });
+
     const result = await res.json().catch(() => ({}));
+
     if (!res.ok && res.status !== 202) {
       throw new Error(result.message || "Payment verification failed.");
     }
-    return result;
+
+    return {
+      ...result,
+      processing: res.status === 202 || result.processing === true,
+    };
   } catch (error) {
-    throw error instanceof Error ? error : new Error("Payment verification failed.");
+    throw error instanceof Error
+      ? error
+      : new Error("Payment verification failed.");
   }
 };
 
-export const GetTransactions = async (_cookie?: string) => {
+export const GetTransactions = async () => {
   try {
-    const res = await authFetch(`${baseUrl}/payments/transactions`, {
+    const res = await authFetch(`${baseUrl}/payments/my-transactions`, {
       method: "GET",
       cache: "no-store",
     });
+
     const result = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(result.message || "Failed to fetch transactions.");
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to fetch transactions.");
+    }
+
     return result;
   } catch (error) {
-    throw error instanceof Error ? error : new Error("Failed to fetch transactions.");
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to fetch transactions.");
+  }
+};
+
+export const GetMySubscription = async () => {
+  try {
+    const res = await authFetch(`${baseUrl}/payments/my-subscription`, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    const result = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to fetch subscription.");
+    }
+
+    return result;
+  } catch (error) {
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to fetch subscription.");
   }
 };
 
 export const CancelSubscription = async () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
-  const res = await authFetch(`${baseUrl}/payments/cancel-subscription`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
-  const result = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(result.message || "Failed to cancel subscription.");
-  return result;
+  try {
+    const res = await authFetch(`${baseUrl}/payments/cancel-subscription`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to cancel subscription.");
+    }
+
+    return result;
+  } catch (error) {
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to cancel subscription.");
+  }
 };

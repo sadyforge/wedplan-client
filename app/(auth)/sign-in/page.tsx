@@ -11,10 +11,17 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-const SignIn = () => {
-  const router=useRouter()
+const SignInForm = () => {
+const router=useRouter()
+const searchParams=useSearchParams()
+
+// Where to go after signing in. The route guard (proxy.ts) appends
+// ?callbackURL=/dashboard/... when an unauthenticated user hits a private page.
+const callbackURL=searchParams.get("callbackURL")||searchParams.get("redirect")||"/"
+
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
@@ -34,7 +41,22 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   if (data) {
     await fetch("/api/auth/backend-token", { method: "POST" });
     toast.success("Successfully signed in!");
-    router.push("/");
+
+    if (searchParams.get("callbackURL") || searchParams.get("redirect")) {
+      router.push(callbackURL);
+    } else {
+      // No explicit destination: send each user to their own dashboard.
+      const session = await authClient.getSession();
+      const role = String(session?.data?.user?.role || "customer");
+      router.push(
+        role === "admin"
+          ? "/dashboard/admin"
+          : role === "vendor"
+            ? "/dashboard/vendor"
+            : "/dashboard/customer"
+      );
+    }
+    router.refresh();
   }
 };
   
@@ -42,7 +64,7 @@ const handleGoogleSignin = async () => {
   try {
     const { error } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL,
     });
 
     if (error) {
@@ -187,5 +209,17 @@ const handleGoogleSignin = async () => {
     </section>
   );
 };
+
+const SignIn = () => (
+  <Suspense
+    fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F4EF]">
+        <p className="animate-pulse text-sm text-[#897A72]">Loading...</p>
+      </div>
+    }
+  >
+    <SignInForm />
+  </Suspense>
+);
 
 export default SignIn;

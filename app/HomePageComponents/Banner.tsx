@@ -26,10 +26,10 @@ const Banner = () => {
 
           <div className="flex flex-wrap items-center gap-4">
             <Link
-              href="/services"
+              href="/browse-services"
               className="rounded-full bg-[#C98291] px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#B66F7F] hover:shadow-md"
             >
-              Explore Services →
+              Explore Wedding Services →
             </Link>
 
             <Link

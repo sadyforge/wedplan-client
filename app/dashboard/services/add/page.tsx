@@ -14,8 +14,8 @@ import {
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { AddServices, GetServices } from "@/lib/actions/services";
+import { GetMySubscription } from "@/lib/actions/payments";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
 
 const categories = [
   "Photography & Videography",
@@ -28,23 +28,18 @@ const categories = [
 
 const AddServiceForm = () => {
   const router=useRouter()
-  const { data: session } = useSession();
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [countedServiceCount, setCountedServiceCount] = useState<number | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const subscriptionPlan = String(
-    (session?.user as { subscriptionPlan?: string } | undefined)?.subscriptionPlan || "Free"
-  ).toLowerCase();
-  const subscriptionStatus = String(
-    (session?.user as { subscriptionStatus?: string } | undefined)?.subscriptionStatus ||
-      (subscriptionPlan === "premium" ? "active" : "inactive")
-  ).toLowerCase();
-  const isPremium =
-    subscriptionPlan === "premium" && subscriptionStatus === "active";
+  const [subscriptionPlan, setSubscriptionPlan] = useState("free");
+  const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
+  const isPremium = subscriptionPlan === "premium" && (subscriptionStatus === "active" || subscriptionStatus === "trialing");
 
   useEffect(() => {
-    GetServices().then((result) => {
+    void Promise.all([GetServices(), GetMySubscription()]).then(([result, subscriptionResult]) => {
       const services = Array.isArray(result)
         ? result
         : Array.isArray(result?.data)
@@ -55,7 +50,17 @@ const AddServiceForm = () => {
           service.status === "pending" || service.status === "approved"
         ).length
       );
-    });
+      const raw = (subscriptionResult?.data || subscriptionResult || {}) as Record<string, unknown>;
+      const nested = (raw.subscription || {}) as Record<string, unknown>;
+      const plan = String(raw.subscriptionPlan || raw.plan || nested.subscriptionPlan || nested.plan || "free").toLowerCase();
+      const status = String(raw.subscriptionStatus || raw.status || nested.subscriptionStatus || nested.status || "inactive").toLowerCase();
+      const expiresAt = String(raw.subscriptionExpiresAt || raw.currentPeriodEnd || nested.subscriptionExpiresAt || nested.currentPeriodEnd || "");
+      const stillActive = !expiresAt || new Date(expiresAt).getTime() > Date.now();
+      setSubscriptionPlan(plan === "premium" && stillActive ? "premium" : "free");
+      setSubscriptionStatus(status);
+    }).catch(() => {
+      toast.error("Unable to refresh subscription status. Please try again.");
+    }).finally(() => setSubscriptionLoading(false));
   }, []);
 
   const [formData, setFormData] = useState({
@@ -108,6 +113,8 @@ const AddServiceForm = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
+  if (subscriptionLoading || isSubmitting) return;
+
   if (!isPremium && countedServiceCount !== null && countedServiceCount >= 3) {
     toast.error("Free vendors can have up to 3 pending or approved services. Upgrade to Premium to add more.");
     return;
@@ -124,6 +131,7 @@ const AddServiceForm = () => {
   }
 
   try {
+    setIsSubmitting(true);
     const apiKey = process.env.NEXT_PUBLIC_IMAGE_API_KEY;
 
     if (!apiKey) {
@@ -196,6 +204,8 @@ if (result?.success) {
   }
 
   toast.error(message);
+} finally {
+  setIsSubmitting(false);
 }
 };
 
@@ -437,10 +447,10 @@ if (result?.success) {
 
               <button
                 type="submit"
-                disabled={!isPremium && countedServiceCount !== null && countedServiceCount >= 3}
+                disabled={subscriptionLoading || isSubmitting || (!isPremium && countedServiceCount !== null && countedServiceCount >= 3)}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C98291] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#B66F7F] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Submit Service
+                {isSubmitting ? "Submitting..." : subscriptionLoading ? "Checking plan..." : "Submit Service"}
               </button>
             </div>
           </form>

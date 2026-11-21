@@ -24,6 +24,7 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
       'Order canceled -- continue to shop around and check out when you\'re ready.'
     )
   }
+  await requireDashboardRole(["vendor"]);
   const { session } = await requireDashboardRole(["vendor"]);
   const sessionUser = session.user as {
     subscriptionPlan?: string;
@@ -35,16 +36,30 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
   };
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
   let remoteSubscription: Record<string, unknown> = {};
+  let subscriptionError = "";
+  let transactionError = "";
   let transactions: Array<Record<string, unknown>> = [];
 
   try {
     const [subscriptionResponse, transactionsResponse] = await Promise.all([
       authFetch(`${baseUrl}/payments/my-subscription`),
-      authFetch(`${baseUrl}/payments/transactions`),
+      authFetch(`${baseUrl}/payments/my-transactions`),
     ]);
     const subscriptionResult = await subscriptionResponse.json().catch(() => ({}));
     const transactionResult = await transactionsResponse.json().catch(() => ({}));
-    remoteSubscription = subscriptionResult?.data || subscriptionResult || {};
+    const source = (subscriptionResult?.data?.subscription || subscriptionResult?.subscription || subscriptionResult?.data || subscriptionResult || {}) as Record<string, unknown>;
+    remoteSubscription = {
+      ...source,
+      subscriptionPlan: source.subscriptionPlan || source.plan,
+      subscriptionStatus: source.subscriptionStatus || source.status,
+      subscriptionStartedAt: source.subscriptionStartedAt || source.currentPeriodStart || source.current_period_start,
+      subscriptionExpiresAt: source.subscriptionExpiresAt || source.currentPeriodEnd || source.current_period_end,
+      subscriptionCancelledAt: source.subscriptionCancelledAt || source.cancelledAt || source.canceled_at,
+      subscriptionCancelAtPeriodEnd: source.subscriptionCancelAtPeriodEnd ?? source.cancelAtPeriodEnd ?? source.cancel_at_period_end,
+    };
+    if (!subscriptionResponse.ok) {
+      throw new Error(subscriptionResult?.message || "Failed to fetch subscription.");
+    }
     transactions = Array.isArray(transactionResult)
       ? transactionResult
       : Array.isArray(transactionResult?.data)
@@ -52,10 +67,15 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
         : Array.isArray(transactionResult?.transactions)
           ? transactionResult.transactions
         : [];
-  } catch {
-    // The authenticated session remains the fallback while the API is unavailable.
+    if (!transactionsResponse.ok) {
+      transactionError = transactionResult?.message || "Failed to load transaction history.";
+    }
+  } catch (error) {
+    subscriptionError = error instanceof Error ? error.message : "Unable to load subscription data.";
   }
 
+  // The backend response is the source of truth. Session values must not
+  // resurrect an expired or cancelled Premium subscription.
   const subscriptionUser = {
     ...sessionUser,
     ...remoteSubscription,
@@ -66,9 +86,10 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
       (requestedPlan.toLowerCase() === "premium" ? "active" : "inactive")
   ).toLowerCase();
   const isPremium =
-    requestedPlan.toLowerCase() === "premium" && requestedStatus === "active";
+    requestedPlan.toLowerCase() === "premium" &&
+    (requestedStatus === "active" || requestedStatus === "trialing");
   const currentPlan = isPremium ? "Premium" : "Free";
-  const subscriptionStatus = isPremium ? "active" : "inactive";
+  const subscriptionStatus = isPremium ? requestedStatus : "inactive";
   const formatDate = (value?: string | Date) => value ? new Date(value).toLocaleDateString() : "Not available";
 
   const freeFeatures = [
@@ -109,6 +130,12 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
           </p>
         </div>
 
+        {subscriptionError && (
+          <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {subscriptionError}
+          </div>
+        )}
+
         {/* Current Plan */}
         <div className="relative overflow-hidden rounded-2xl border border-[#EADDE0] bg-white p-5 shadow-[0_8px_30px_rgba(80,50,50,0.06)] sm:p-7">
           <div className="absolute -right-10 -top-16 h-48 w-48 rounded-full bg-[#F9E9EC] blur-3xl" />
@@ -133,7 +160,11 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
               <p className="mt-1 text-sm text-[#8B8179]">
                 {isPremium ? "Your Premium subscription is active." : "You are currently using the free WedPlan subscription."}
               </p>
-              {isPremium && !subscriptionUser.subscriptionCancelAtPeriodEnd && <CancelButton />}
+              {isPremium && subscriptionUser.subscriptionCancelAtPeriodEnd ? (
+                <p className="mt-4 text-xs font-semibold text-amber-700">
+                  Cancellation scheduled. Premium access continues until {formatDate(subscriptionUser.subscriptionExpiresAt)}.
+                </p>
+              ) : isPremium ? <CancelButton /> : null}
             </div>
 
             <div className="rounded-xl border border-[#F0E5E7] bg-[#FFF8F8] px-5 py-4">
@@ -173,6 +204,18 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
                 <p className="text-sm font-semibold">Billing</p>
                 <p className="text-xs text-[#8B8179]">
                   {isPremium ? `Renews: ${formatDate(subscriptionUser.subscriptionExpiresAt)}` : "No payment required"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[#F9E9EC] p-2 text-[#C98291]">
+                <Clock size={19} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Cancellation status</p>
+                <p className="text-xs text-[#8B8179]">
+                  {subscriptionUser.subscriptionCancelAtPeriodEnd ? "Scheduled at period end" : "Not scheduled"}
                 </p>
               </div>
             </div>
@@ -310,8 +353,8 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
               </h3>
 
               <p className="mt-1 text-xs leading-6 text-[#8B8179]">
-                {isPremium
-                  ? `Premium is ${subscriptionStatus}. Started: ${formatDate(subscriptionUser.subscriptionStartedAt)}. Renewal/expiration: ${formatDate(subscriptionUser.subscriptionExpiresAt)}.${subscriptionUser.subscriptionCancelledAt ? ` Cancelled: ${formatDate(subscriptionUser.subscriptionCancelledAt)}.` : ""}`
+                  {isPremium
+                  ? `Premium is ${subscriptionStatus}. Started: ${formatDate(subscriptionUser.subscriptionStartedAt)}. Renewal/expiration: ${formatDate(subscriptionUser.subscriptionExpiresAt)}.${subscriptionUser.subscriptionCancelledAt ? ` Cancelled: ${formatDate(subscriptionUser.subscriptionCancelledAt)}.` : ""}${subscriptionUser.subscriptionCancelAtPeriodEnd ? " Cancellation is scheduled at period end; Premium remains active until expiry." : ""}`
                   : "Your Free plan remains active until you upgrade. Premium features will become available after successful payment verification. All subscription payments are securely processed through Stripe."}
               </p>
             </div>
@@ -326,6 +369,9 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
             </div>
             <CreditCard size={20} className="text-[#C98291]" />
           </div>
+          {transactionError && (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{transactionError}</p>
+          )}
           {transactions.length ? (
             <div className="divide-y divide-[#F0E5E7]">
               {transactions.slice(0, 5).map((transaction, index) => (
@@ -335,9 +381,15 @@ const SubscriptionPage = async ({ searchParams }: { searchParams: Promise<{ plan
                     <p className="mt-1 text-xs text-[#8B8179]">
                       {formatDate(String(transaction.createdAt || transaction.paidAt || transaction.date || ""))}
                     </p>
+                    <p className="mt-1 text-xs text-[#8B8179]">
+                      Status: {String(transaction.status || "unknown")} · ID: {String(transaction.transactionId || transaction.invoiceId || transaction._id || transaction.id || "N/A")}
+                    </p>
+                    <p className="mt-1 text-xs text-[#8B8179]">
+                      Subscription: {String(transaction.subscriptionId || "N/A")}
+                    </p>
                   </div>
                   <span className="font-semibold text-[#302925]">
-                    {String(transaction.amount || transaction.total || "৳999")}
+                    {String(transaction.currency || "BDT").toUpperCase()} {String(transaction.amount ?? transaction.total ?? "N/A")}
                   </span>
                 </div>
               ))}

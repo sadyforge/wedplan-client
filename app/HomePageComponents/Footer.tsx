@@ -22,11 +22,16 @@ const Footer = () => {
             </p>
 
             <div className="mt-6 flex gap-3">
-              {[FaFacebookF, FaInstagram].map((Icon, index) => (
+              {[
+                { Icon: FaFacebookF, label: "Facebook", href: "https://www.facebook.com/" },
+                { Icon: FaInstagram, label: "Instagram", href: "https://www.instagram.com/" },
+              ].map(({ Icon, label, href }) => (
                 <a
-                  key={index}
-                  href="#"
-                  aria-label={index === 0 ? "Facebook" : "Instagram"}
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-[#655951] text-[#E8C7CB] transition hover:border-[#C98291] hover:bg-[#C98291] hover:text-white"
                 >
                   <Icon size={18} />
@@ -44,7 +49,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-[#E8B7C0]">
+                <Link href="/browse-services" className="hover:text-[#E8B7C0]">
                   Browse Services
                 </Link>
               </li>
@@ -82,7 +87,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={17} className="shrink-0 text-[#C98291]" />
-                +880 1XXX-XXXXXX
+                +880 1712-345678
               </li>
               <li className="flex items-center gap-3">
                 <MapPin size={17} className="shrink-0 text-[#C98291]" />
