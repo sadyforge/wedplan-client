@@ -15,70 +15,89 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 const SignInForm = () => {
-const router=useRouter()
-const searchParams=useSearchParams()
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-// Where to go after signing in. The route guard (proxy.ts) appends
-// ?callbackURL=/dashboard/... when an unauthenticated user hits a private page.
-const callbackURL=searchParams.get("callbackURL")||searchParams.get("redirect")||"/"
+  const callbackURL =
+    searchParams.get("callbackURL") ||
+    searchParams.get("redirect") ||
+    "/";
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const formData = new FormData(e.currentTarget);
-  const signInData = Object.fromEntries(formData.entries());
+    const formData = new FormData(e.currentTarget);
+    const signInData = Object.fromEntries(formData.entries());
 
-  const { data, error } = await authClient.signIn.email({
-    email: String(signInData.email),
-    password: String(signInData.password),
-  });
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email: String(signInData.email),
+        password: String(signInData.password),
+      });
 
-  if (error) {
-    toast.error(error.message || "Sign in failed!");
-    return;
-  }
+      if (error) {
+        toast.error(error.message || "Sign in failed!");
+        return;
+      }
 
-  if (data) {
-    await fetch("/api/auth/backend-token", { method: "POST" });
-    toast.success("Successfully signed in!");
+      if (!data) {
+        toast.error("Sign in failed!");
+        return;
+      }
 
-    if (searchParams.get("callbackURL") || searchParams.get("redirect")) {
-      router.push(callbackURL);
-    } else {
-      // No explicit destination: send each user to their own dashboard.
-      const session = await authClient.getSession();
-      const role = String(
-        (session?.data?.user as { role?: string } | null | undefined)?.role ||
-          "customer"
-      );
-      router.push(
-        role === "admin"
-          ? "/dashboard/admin"
-          : role === "vendor"
-            ? "/dashboard/vendor"
-            : "/dashboard/customer"
-      );
+      const tokenResponse = await fetch("/api/auth/backend-token", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!tokenResponse.ok) {
+        toast.error("Failed to authenticate with backend!");
+        return;
+      }
+
+      toast.success("Successfully signed in!");
+
+      let destination = callbackURL;
+
+      if (!searchParams.get("callbackURL") && !searchParams.get("redirect")) {
+        const session = await authClient.getSession();
+
+        const role = String(
+          (session?.data?.user as { role?: string } | null | undefined)
+            ?.role || "customer"
+        );
+
+        destination =
+          role === "admin"
+            ? "/dashboard/admin"
+            : role === "vendor"
+              ? "/dashboard/vendor"
+              : "/dashboard/customer";
+      }
+
+      router.replace(destination);
+      router.refresh();
+    } catch (error) {
+      console.error("Sign in error:", error);
+      toast.error("Something went wrong. Please try again.");
     }
-    router.refresh();
-  }
-};
-  
-const handleGoogleSignin = async () => {
-  try {
-    const { error } = await authClient.signIn.social({
-      provider: "google",
-      callbackURL,
-    });
+  };
 
-    if (error) {
-      toast.error(error.message || "Google sign in failed");
+  const handleGoogleSignin = async () => {
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL,
+      });
+
+      if (error) {
+        toast.error(error.message || "Google sign in failed");
+      }
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      toast.error("Something went wrong. Please try again.");
     }
-  } catch (error) {
-    console.error("Google sign in error:", error);
-    toast.error("Something went wrong. Please try again.");
-  }
-};
-
+  };
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-[#F8F4EF] px-4 py-12">
