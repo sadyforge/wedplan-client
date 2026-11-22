@@ -20,10 +20,18 @@ import Link from "next/link";
 const ProfilePage = () => {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+  const profileUser = user as
+    | (typeof user & {
+        role?: string;
+        subscriptionPlan?: string;
+        subscriptionStatus?: string;
+        createdAt?: string | Date;
+      })
+    | undefined;
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const role = user?.role || "customer";
+  const role = profileUser?.role || "customer";
 
   const roleLabel =
     role === "admin"
@@ -31,11 +39,6 @@ const ProfilePage = () => {
       : role === "vendor"
         ? "Vendor"
         : "Customer";
-  const profileUser = user as typeof user & {
-    subscriptionPlan?: string;
-    subscriptionStatus?: string;
-    createdAt?: string | Date;
-  };
   const isPremiumVendor =
     role === "vendor" &&
     String(profileUser?.subscriptionPlan || "free").toLowerCase() === "premium" &&

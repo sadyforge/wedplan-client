@@ -156,13 +156,15 @@ const SignUp = () => {
     setSubmitting(true);
 
     try {
-      const { error } = await authClient.signUp.email({
+      const signUpData = {
         name,
         email,
         password, 
         image: imageURL || undefined,
         role,
-      });
+      } as Parameters<typeof authClient.signUp.email>[0];
+
+      const { error } = await authClient.signUp.email(signUpData);
 
       if (error) {
         toast.error(error.message || "Something went wrong");

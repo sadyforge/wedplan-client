@@ -47,7 +47,10 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     } else {
       // No explicit destination: send each user to their own dashboard.
       const session = await authClient.getSession();
-      const role = String(session?.data?.user?.role || "customer");
+      const role = String(
+        (session?.data?.user as { role?: string } | null | undefined)?.role ||
+          "customer"
+      );
       router.push(
         role === "admin"
           ? "/dashboard/admin"

@@ -81,6 +81,10 @@ export const protectedMutation = async (
 
 export const requireRole = async (role: string) => {
   const session = await getSession();
-  if (!session?.user || session.user.role !== role) redirect("/unauthorized");
+  if (
+    !session?.user ||
+    (session.user as typeof session.user & { role?: string }).role !== role
+  )
+    redirect("/unauthorized");
   return session;
 };

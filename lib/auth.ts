@@ -10,9 +10,7 @@
     emailAndPassword: {
       enabled: true,
       // Assignment rule: minimum 6 characters.
-      password: {
-        minPasswordLength: 6,
-      },
+      minPasswordLength: 6,
     },
     socialProviders: {
           google: { 
