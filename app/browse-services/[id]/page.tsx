@@ -11,7 +11,13 @@ interface Props { params: Promise<{ id: string }> }
 
 const ServiceDetailsContent = async ({ params }: Props) => {
   const { id } = await params;
-  const service = await GetApprovedService(id);
+  const rawService = await GetApprovedService(id);
+  const service =
+    rawService && typeof rawService === "object"
+      ? rawService["0"]
+        ? { ...rawService["0"], ...rawService }
+        : rawService.data || rawService
+      : null;
   if (!service || service.status !== "approved") notFound();
 
   const images = service.images?.length ? service.images : service.image ? [service.image] : [];
